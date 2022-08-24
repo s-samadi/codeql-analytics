@@ -1,0 +1,28 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{FA234BD4-3692-42B1-A5DF-02CB6CAAB07B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GitHub.CodeQL.Analytics.Cli", "src\GitHub.CodeQL.Analytics.Cli\GitHub.CodeQL.Analytics.Cli.csproj", "{63C871A6-E538-11EC-AB13-EF8CE5ECE31A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GitHub.CodeQL.Analytics.Data", "src\GitHub.CodeQL.Analytics.Data\GitHub.CodeQL.Analytics.Data.csproj", "{A1D985A8-4A93-4C89-88BE-834971C2A2E0}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{63C871A6-E538-11EC-AB13-EF8CE5ECE31A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{63C871A6-E538-11EC-AB13-EF8CE5ECE31A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{63C871A6-E538-11EC-AB13-EF8CE5ECE31A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{63C871A6-E538-11EC-AB13-EF8CE5ECE31A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A1D985A8-4A93-4C89-88BE-834971C2A2E0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A1D985A8-4A93-4C89-88BE-834971C2A2E0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A1D985A8-4A93-4C89-88BE-834971C2A2E0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A1D985A8-4A93-4C89-88BE-834971C2A2E0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{63C871A6-E538-11EC-AB13-EF8CE5ECE31A} = {FA234BD4-3692-42B1-A5DF-02CB6CAAB07B}
+		{a1d985a8-4a93-4c89-88be-834971c2a2e0} = {FA234BD4-3692-42B1-A5DF-02CB6CAAB07B}
+	EndGlobalSection
+EndGlobal
