@@ -1,9 +1,8 @@
+using System;
+using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
-using GitHub.CodeQL.Analytics.Data.Models.Animals;
 using GitHub.CodeQL.Analytics.Data.Services;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Typin;
 using Typin.Attributes;
@@ -13,44 +12,54 @@ namespace GitHub.CodeQL.Analytics.Cli.Commands.Reports;
 
 [Command("report simple")]
 public class SimpleCommand : ICommand {
-    
+
+    private readonly IServiceProvider _provider;
     private readonly ILogger<SimpleCommand> _log;
     private readonly AnalyticsContext _ctx;
 
-    public SimpleCommand(ILogger<SimpleCommand> log, AnalyticsContext ctx) {
+    public SimpleCommand(IServiceProvider provider, ILogger<SimpleCommand> log, AnalyticsContext ctx) {
+        _provider = provider;
         _log = log;
         _ctx = ctx;
     }
-    
+    [CommandOption("file", Description = "report file path", IsRequired = true)]
+    public string FilePath { get; set; }
+
+    [CommandOption("title", Description = "report title", IsRequired = true)]
+    public string ReportTitle { get; set; }
+
+    [CommandOption("querypack", Description = "Query pack to generate report for", IsRequired = true)]
+    public string QueryPack { get; set; }
+
+    [CommandOption("database", Description = "CodeQL database to generate report for", IsRequired = true)]
+    public string CodeQLDatabase { get; set; }
+
     public async ValueTask ExecuteAsync(IConsole console) {
-        await DisplayCatPeople();
-        await LetThePetsTalk();
+        await GetResults();
     }
 
-    private async Task DisplayCatPeople() {
-        var people = await _ctx.PersonSet
-            .Where(x => x.PetList.Any(y => y is Cat))
-            .ToListAsync();
+    private async Task GetResults()
+    {
+        using (var ctx = _ctx) {
+            var results = ctx.AnalysesSet.Where( p=> p.QueryPack == QueryPack && p.CodeQLDatabaseName == CodeQLDatabase ).ToList();
+            string filepath = FilePath;
 
-        var msg = new StringBuilder();
-        msg.AppendLine("Cat people:");
-        foreach (var person in people) {
-            msg.AppendLine($"\t- {person.Name}");
-        }
-        _log.LogInformation(msg.ToString());
-    }
-
-    private async Task LetThePetsTalk() {
-        var people = await _ctx.PersonSet
-            .ToListAsync();
-
-        foreach (var person in people) {
-            var msg = new StringBuilder();
-            msg.AppendLine($"{person.Name}'s pets say:");
-            foreach (var pet in person.PetList) {
-                msg.AppendLine($"\t- {pet.Name} says '{pet.Speak()}!'");
+            if (!System.IO.File.Exists(filepath))
+            {
+                if (Path.GetExtension(filepath) != ".md")
+                {
+                    throw new FormatException("This file extension is not supported");
+                }
+                string reportTitle = ReportTitle;
+   
+                MarkdownReport report = new MarkdownReport(_provider, ctx, results); 
+                report.GenerateReport(filepath, reportTitle, CodeQLDatabase, QueryPack);
             }
-            _log.LogInformation(msg.ToString());
+            else
+            {
+                Console.WriteLine("File \"{0}\" already exists.", filepath);
+                return;
+            }
         }
     }
 }

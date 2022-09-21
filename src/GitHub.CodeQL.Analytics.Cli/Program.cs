@@ -17,7 +17,7 @@ internal class Program {
 
     private static async Task Main() {
         await new CliApplicationBuilder()
-            .AddCommandsFromThisAssembly()
+            .AddCommandsFromThisAssembly()  
             .ConfigureLogging(options => {
                 var logger = new LoggerConfiguration()
                     .WriteTo.Console(outputTemplate: "[{Timestamp:HH:mm:ss} {Level}] {SourceContext}{NewLine}{Message:lj}{NewLine}{Exception}{NewLine}")
@@ -34,6 +34,7 @@ internal class Program {
                 var cfg = builder.Build();
                 services.Add(new ServiceDescriptor(typeof(IConfiguration), cfg));
                 services.AddSingleton<SecretService>();
+                services.AddSingleton<SarifService>();
 
                 services.AddDbContext<AnalyticsContext>(
                     options => {
