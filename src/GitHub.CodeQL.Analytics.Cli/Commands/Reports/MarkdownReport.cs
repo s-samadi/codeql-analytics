@@ -37,29 +37,31 @@ namespace GitHub.CodeQL.Analytics.Cli.Commands.Reports
             _log.LogInformation("Generating top ten results");
             List<Rules> topten = analysis.Results.GroupBy(o => o.Rule).OrderByDescending(p => p.Count()).Select(k => k.Key).Take(10).ToList();
 
-                writer.WriteLine("| Rule | Count | Description |");
-                writer.WriteLine("|---|---|---|");
+            writer.WriteLine("| Rule | Count | Description |");
+            writer.WriteLine("|---|---|---|");
 
 
-                foreach (var rule in topten)
+            foreach (var rule in topten)
+            {
+                writer.Write(" | ");
+                writer.Write(rule.Id.ToString() + " | ");
+                writer.Write(rule.Results.Count + " | ");
+                writer.Write("**Rule Name:** " + rule.RuleName + "<br>");
+                writer.Write("**Description:** " + rule.FullDescription + "<br>");
+                writer.Write("**Severity:** " + rule.ProblemSeverity + "<br>");
+                writer.Write("**Precision:** " + rule.RulePrecision + "<br>");
+                writer.Write("**Tags:** ");
+                foreach (Tags tag in rule.RuleTags)
                 {
-                    writer.Write(" | ");
-                    writer.Write(rule.Id.ToString() + " | ");
-                    writer.Write(rule.Results.Count + " | ");
-                    writer.Write("**Rule Name:** " + rule.RuleName + "  ");
-                    writer.Write("**Description:** " + rule.FullDescription + "  ");
-                    writer.Write("**Severity:** " + rule.ProblemSeverity + "  ");
-                    writer.Write("**Precision:** " + rule.RulePrecision + "  ");
-                    writer.Write("**Tags:** ");
-                    foreach (Tags tag in rule.RuleTags)
-                    {
+                    if (tag != rule.RuleTags.LastOrDefault())
                         writer.Write(tag.Name + " , ");
-                    }
-                    writer.Write(" | \n");
-
+                    else
+                        writer.Write(tag.Name);
                 }
-                writer.WriteLine();
-            
+
+                writer.WriteLine(" | ");
+            }
+            writer.WriteLine();
 
             _log.LogInformation("Successfully generated top ten results");
             return topten;
@@ -67,6 +69,7 @@ namespace GitHub.CodeQL.Analytics.Cli.Commands.Reports
 
         public string GenerateTopTenPieChart(Analyses analysis, List<Rules> topten)
         {
+
             var plt = new ScottPlot.Plot(1200, 800);
             double totalResults = Convert.ToDouble(analysis.Results.Count());
             var values = new List<Double>();
@@ -172,7 +175,7 @@ namespace GitHub.CodeQL.Analytics.Cli.Commands.Reports
             plt.XTicks(position.ToArray(), labels.ToArray());
             plt.SetAxisLimits(yMin: 0);
 
-            string imagename = reportTitle + "resultsummarybarchart.png";
+            string imagename = Path.GetRandomFileName() + "resultsummarybarchart.png";
             return plt.SaveFig(Path.Combine(_generatedChartPath, imagename));
         }
 
@@ -233,18 +236,18 @@ namespace GitHub.CodeQL.Analytics.Cli.Commands.Reports
             foreach (var result in filesummary)
             {
 
-                    writer.Write(" | ");
-                    writer.Write(result.Key + " | ");
-                    writer.Write(result.V + " | \n ");
+                writer.Write(" | ");
+                writer.Write(result.Key + " | ");
+                writer.Write(result.V + " | \n ");
 
             }
         }
 
-        public void GenerateTotalTimeSummary(List<Tuple<Guid,string,string,int>> totalTimes, StreamWriter writer)
+        public void GenerateTotalTimeSummary(List<Tuple<Guid, string, string, int>> totalTimes, StreamWriter writer)
         {
             writer.WriteLine();
             string heading = "**Total Analysis Time**";
-;
+            ;
 
             writer.WriteLine("| AnalysisId | Pack Version | Duration (ms) | Total no. of rules");
             writer.WriteLine("|---|---|---|---|");
@@ -259,7 +262,7 @@ namespace GitHub.CodeQL.Analytics.Cli.Commands.Reports
             writer.WriteLine();
         }
 
-        public void GenerateReport(string filepath, string reportTitle, string db , string querypack)
+        public void GenerateReport(string filepath, string reportTitle, string db, string querypack)
         {
             using (System.IO.FileStream fs = System.IO.File.Create(filepath))
             {
@@ -272,7 +275,7 @@ namespace GitHub.CodeQL.Analytics.Cli.Commands.Reports
                     //sort 
                     _analyses = _analyses.OrderBy(item => item.PackVersion).ThenBy(item => item.AnalysisDate).ToList();
                     List<Tuple<string, int>> totalResult = new List<Tuple<string, int>>();
-                    List<Tuple<Guid,string, string,int>> totalTime = new List<Tuple<Guid, string, string,int>>();
+                    List<Tuple<Guid, string, string, int>> totalTime = new List<Tuple<Guid, string, string, int>>();
                     string subheadingl3 = "Analysis of CodeQL database **" + db + "** using query pack **" + querypack + "**";
                     writer.WriteLine(subheadingl3);
 
@@ -280,8 +283,8 @@ namespace GitHub.CodeQL.Analytics.Cli.Commands.Reports
                     base.createHeading(sectionheading, 2, writer);
                     foreach (var analysis in _analyses)
                     {
-                       
-                        totalResult.Add(new Tuple<string, int>(analysis.PackVersion, analysis.Results.Count()));                      
+
+                        totalResult.Add(new Tuple<string, int>(analysis.PackVersion, analysis.Results.Count()));
                         totalTime.Add(new Tuple<Guid, string, string, int>(analysis.AnalysisId, analysis.PackVersion, analysis.TotalAnalysisTime, analysis.Rules.Count));
 
                     }
@@ -289,31 +292,32 @@ namespace GitHub.CodeQL.Analytics.Cli.Commands.Reports
                     GenerateTotalTimeSummary(totalTime, writer);
 
                     writer.WriteLine("**Results Summary Chart**");
+                    writer.WriteLine(" <br> ");
                     writer.WriteLine("![Results Summary Chart](./charts/" + Path.GetFileName(generatedSummaryChartFile) + ")");//to do - make this less hard coded
 
                     foreach (var analysis in _analyses)
                     {
-                        string subheading = "Results for analysis ";
+                        string subheading = "Results for analysis";
                         if (analysis.PackVersion != null)
                             subheading += " using Coding Standards Pack Version " + analysis.PackVersion;
                         base.createHeading(subheading, 2, writer);
 
 
 
-                        string analysisid = "Analysis Id: " + analysis.AnalysisId;
-                        string language = "Language Analysed: " + analysis.LanguageAnalysed;
+                        string analysisid = "Analysis Id: " + analysis.AnalysisId + "<br>";
+                        string language = "Language Analysed: " + analysis.LanguageAnalysed + "<br>";
                         writer.WriteLine(language);
 
-                        string analysisDate = "Analysis Date: " + analysis.AnalysisDate;
+                        string analysisDate = "Analysis Date: " + analysis.AnalysisDate + "<br>";
                         writer.WriteLine(analysisDate);
 
                         if (analysis.CodeQLVersion != null)
                         {
-                            string codeqlVersion = "This analysis was done using CodeQL CLI Version " + analysis.CodeQLVersion;
+                            string codeqlVersion = "This analysis was done using CodeQL CLI Version " + analysis.CodeQLVersion + "<br>";
                             writer.WriteLine(codeqlVersion);
                         }
 
-                        string totalCount = "The total number of alerts for this analysis was " + analysis.Results.Count() + "\n";
+                        string totalCount = "The total number of alerts for this analysis was " + analysis.Results.Count() + "<br>";
 
 
                         writer.WriteLine(totalCount);
